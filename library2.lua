@@ -4,18 +4,14 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Stats = game:GetService("Stats")
 local Player = game.Players.LocalPlayer
-local Mouse = Player:GetMouse()
 
--- Удаляем старую версию, чтобы интерфейс не дублировался при перезапуске
 if CoreGui:FindFirstChild("XenonHub") then
     CoreGui.XenonHub:Destroy()
 end
 
--- Настройки анимаций 
 local SmoothTween = TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
 local FastTween = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 local BounceTween = TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out) 
-
 local OpenTween = TweenInfo.new(0.7, Enum.EasingStyle.Back, Enum.EasingDirection.Out) 
 local CloseTween = TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.InOut) 
 
@@ -63,12 +59,13 @@ function library:Window(Info)
     mainStroke.Thickness = 2 
 
     ----------------------------------------------------------------------
-    -- TOPBAR И ЗАГОЛОВОК
+    -- TOPBAR 
     ----------------------------------------------------------------------
     local topbar = Instance.new("Frame", main)
     topbar.BackgroundColor3 = library.Theme.Topbar
     topbar.Size = UDim2.new(1, 0, 0, 42)
     topbar.BorderSizePixel = 0
+    topbar.ZIndex = 50 -- ЖЁСТКАЯ ИЗОЛЯЦИЯ ПОВЕРХ ВСЕГО
     Instance.new("UICorner", topbar).CornerRadius = UDim.new(0, 16) 
     
     local topbarFiller = Instance.new("Frame", topbar)
@@ -76,12 +73,13 @@ function library:Window(Info)
     topbarFiller.BorderSizePixel = 0
     topbarFiller.Size = UDim2.new(1, 0, 0, 16)
     topbarFiller.Position = UDim2.new(0, 0, 1, -16)
+    topbarFiller.ZIndex = 50
 
     local topbarLine = Instance.new("Frame", topbar)
     topbarLine.BackgroundColor3 = library.Theme.Accent
     topbarLine.Size = UDim2.new(1, -24, 0, 3)
     topbarLine.Position = UDim2.new(0, 12, 1, -3)
-    topbarLine.ZIndex = 2
+    topbarLine.ZIndex = 51
     Instance.new("UICorner", topbarLine).CornerRadius = UDim.new(1, 0)
 
     local title = Instance.new("TextLabel", topbar)
@@ -93,17 +91,14 @@ function library:Window(Info)
     title.Position = UDim2.new(0, 16, 0, 0)
     title.Size = UDim2.new(0.4, 0, 1, 0)
     title.TextXAlignment = Enum.TextXAlignment.Left
-    title.ZIndex = 2
+    title.ZIndex = 52
 
-    ----------------------------------------------------------------------
-    -- ПРАВАЯ ЧАСТЬ TOPBAR (АВАТАР, НИК, FPS, PING)
-    ----------------------------------------------------------------------
     local userInfo = Instance.new("Frame", topbar)
     userInfo.BackgroundTransparency = 1
     userInfo.AnchorPoint = Vector2.new(1, 0)
     userInfo.Position = UDim2.new(1, -12, 0, 0)
     userInfo.Size = UDim2.new(0.5, 0, 1, 0)
-    userInfo.ZIndex = 2
+    userInfo.ZIndex = 52
 
     local userLayout = Instance.new("UIListLayout", userInfo)
     userLayout.FillDirection = Enum.FillDirection.Horizontal
@@ -117,7 +112,6 @@ function library:Window(Info)
     avatarBox.BackgroundColor3 = library.Theme.Section
     avatarBox.LayoutOrder = 3
     Instance.new("UICorner", avatarBox).CornerRadius = UDim.new(1, 0)
-    
     local avatarStroke = Instance.new("UIStroke", avatarBox)
     avatarStroke.Color = library.Theme.Stroke
     avatarStroke.Thickness = 1.5
@@ -125,7 +119,7 @@ function library:Window(Info)
     local avatarImage = Instance.new("ImageLabel", avatarBox)
     avatarImage.BackgroundTransparency = 1
     avatarImage.Size = UDim2.new(1, 0, 1, 0)
-    avatarImage.Image = "rbxthumb://type=AvatarHeadShot&id=" .. Player.UserId .. "&w=150&h=150"
+    avatarImage.Image = "rbxthumb://type=AvatarHeadShot&id=" .. (Player.UserId > 0 and Player.UserId or 1) .. "&w=150&h=150"
     Instance.new("UICorner", avatarImage).CornerRadius = UDim.new(1, 0)
 
     local nameLabel = Instance.new("TextLabel", userInfo)
@@ -154,31 +148,34 @@ function library:Window(Info)
     statsLabel.LayoutOrder = 0
 
     ----------------------------------------------------------------------
-    -- SIDE MENU
+    -- SIDE MENU (ЛЕВОЕ МЕНЮ ВКЛАДОК)
     ----------------------------------------------------------------------
     local tabContainer = Instance.new("Frame", main)
     tabContainer.BackgroundColor3 = library.Theme.Side
     tabContainer.Position = UDim2.new(0, 0, 0, 42)
     tabContainer.Size = UDim2.new(0, 140, 1, -42)
     tabContainer.BorderSizePixel = 0
+    tabContainer.ZIndex = 40
     Instance.new("UICorner", tabContainer).CornerRadius = UDim.new(0, 16) 
 
     local tabTopSquare = Instance.new("Frame", tabContainer)
     tabTopSquare.BackgroundColor3 = library.Theme.Side
     tabTopSquare.BorderSizePixel = 0
     tabTopSquare.Size = UDim2.new(1, 0, 0, 16)
+    tabTopSquare.ZIndex = 40
     
     local tabRightSquare = Instance.new("Frame", tabContainer)
     tabRightSquare.BackgroundColor3 = library.Theme.Side
     tabRightSquare.BorderSizePixel = 0
     tabRightSquare.Size = UDim2.new(0, 16, 1, 0)
     tabRightSquare.Position = UDim2.new(1, -16, 0, 0)
+    tabRightSquare.ZIndex = 40
 
     local scrollingTabs = Instance.new("ScrollingFrame", tabContainer)
     scrollingTabs.BackgroundTransparency = 1
     scrollingTabs.Size = UDim2.new(1, 0, 1, 0)
     scrollingTabs.ScrollBarThickness = 0
-    scrollingTabs.ZIndex = 2
+    scrollingTabs.ZIndex = 41
     local tabLayout = Instance.new("UIListLayout", scrollingTabs)
     tabLayout.Padding = UDim.new(0, 6)
     Instance.new("UIPadding", scrollingTabs).PaddingTop = UDim.new(0, 12)
@@ -186,7 +183,17 @@ function library:Window(Info)
     Instance.new("UIPadding", scrollingTabs).PaddingRight = UDim.new(0, 12)
 
     ----------------------------------------------------------------------
-    -- ФИЗИКА, DRAG & СТАТИСТИКА (FPS / PING)
+    -- CONTENT AREA (ЗОНА КОНТЕНТА - ИСКЛЮЧАЕТ НАЛОЖЕНИЯ)
+    ----------------------------------------------------------------------
+    local contentArea = Instance.new("Frame", main)
+    contentArea.BackgroundTransparency = 1
+    contentArea.Position = UDim2.new(0, 140, 0, 42) -- Строго справа от меню и под топбаром
+    contentArea.Size = UDim2.new(1, -140, 1, -42)
+    contentArea.ClipsDescendants = true -- Запрещает вылазить наверх
+    contentArea.ZIndex = 10
+
+    ----------------------------------------------------------------------
+    -- ФИЗИКА, DRAG & СТАТИСТИКА
     ----------------------------------------------------------------------
     local dragging = false
     local dragInput, dragStart, startPos
@@ -202,9 +209,7 @@ function library:Window(Info)
     end)
 
     topbar.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            dragInput = input
-        end
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
     end)
 
     UserInputService.InputChanged:Connect(function(input) 
@@ -235,11 +240,8 @@ function library:Window(Info)
         if tick() - lastUpdate >= 1 then
             local fps = frames
             local ping = 0
-            
             pcall(function() ping = math.round(Stats.Network.ServerStatsItem["Data Ping"]:GetValue()) end)
-            if ping == 0 then
-                pcall(function() ping = math.round(Player:GetNetworkPing() * 1000) end)
-            end
+            if ping == 0 then pcall(function() ping = math.round(Player:GetNetworkPing() * 1000) end) end
 
             statsLabel.Text = tostring(fps) .. " FPS • " .. tostring(ping) .. " ms"
             frames = 0
@@ -251,7 +253,6 @@ function library:Window(Info)
     -- ОТКРЫТИЕ / ЗАКРЫТИЕ 
     ----------------------------------------------------------------------
     local isOpened = true
-
     local function ToggleUI()
         isOpened = not isOpened
         if isOpened then
@@ -277,7 +278,7 @@ function library:Window(Info)
     mobileBtn.TextColor3 = library.Theme.Accent
     mobileBtn.Font = Enum.Font.GothamBold
     mobileBtn.TextSize = 24
-    mobileBtn.ZIndex = 10
+    mobileBtn.ZIndex = 100
     mobileBtn.Visible = UserInputService.TouchEnabled 
 
     Instance.new("UICorner", mobileBtn).CornerRadius = UDim.new(1, 0) 
@@ -333,7 +334,7 @@ function library:Window(Info)
         tabBtn.BackgroundTransparency = 1
         tabBtn.Size = UDim2.new(1, 0, 0, 32)
         tabBtn.Text = ""
-        tabBtn.ZIndex = 3
+        tabBtn.ZIndex = 42
 
         local tabFrame = Instance.new("Frame", tabBtn)
         tabFrame.BackgroundColor3 = library.Theme.Accent
@@ -349,21 +350,24 @@ function library:Window(Info)
         tabText.BackgroundTransparency = 1
         tabText.Size = UDim2.new(1, 0, 1, 0)
 
-        local leftContainer = Instance.new("ScrollingFrame", main)
+        -- КОНТЕЙНЕРЫ ТЕПЕРЬ ОТНОСИТЕЛЬНО contentArea (Никогда не залезут наверх)
+        local leftContainer = Instance.new("ScrollingFrame", contentArea)
         leftContainer.BackgroundTransparency = 1
         leftContainer.ScrollBarThickness = 0
-        leftContainer.Position = UDim2.new(0, 155, 0, 52)
-        leftContainer.Size = UDim2.new(0, 190, 1, -64)
+        leftContainer.Position = UDim2.new(0, 15, 0, 10)
+        leftContainer.Size = UDim2.new(0.5, -22, 1, -20)
         leftContainer.Visible = false
+        leftContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y -- Авто-скролл (Фикс багов)
         local leftLayout = Instance.new("UIListLayout", leftContainer)
         leftLayout.Padding = UDim.new(0, 10)
 
-        local rightContainer = Instance.new("ScrollingFrame", main)
+        local rightContainer = Instance.new("ScrollingFrame", contentArea)
         rightContainer.BackgroundTransparency = 1
         rightContainer.ScrollBarThickness = 0
-        rightContainer.Position = UDim2.new(0, 355, 0, 52)
-        rightContainer.Size = UDim2.new(0, 190, 1, -64)
+        rightContainer.Position = UDim2.new(0.5, 7, 0, 10)
+        rightContainer.Size = UDim2.new(0.5, -22, 1, -20)
         rightContainer.Visible = false
+        rightContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y -- Авто-скролл (Фикс багов)
         local rightLayout = Instance.new("UIListLayout", rightContainer)
         rightLayout.Padding = UDim.new(0, 10)
 
@@ -379,7 +383,7 @@ function library:Window(Info)
                     Tween(v.Frame.TextLabel, FastTween, {TextColor3 = library.Theme.Muted})
                 end
             end
-            for _, v in pairs(main:GetChildren()) do
+            for _, v in pairs(contentArea:GetChildren()) do
                 if v:IsA("ScrollingFrame") then v.Visible = false end
             end
             
@@ -388,10 +392,10 @@ function library:Window(Info)
             leftContainer.Visible = true
             rightContainer.Visible = true
             
-            leftContainer.Position = UDim2.new(0, 145, 0, 52)
-            rightContainer.Position = UDim2.new(0, 345, 0, 52)
-            Tween(leftContainer, SmoothTween, {Position = UDim2.new(0, 155, 0, 52)})
-            Tween(rightContainer, SmoothTween, {Position = UDim2.new(0, 355, 0, 52)})
+            leftContainer.Position = UDim2.new(0, 5, 0, 10)
+            rightContainer.Position = UDim2.new(0.5, 17, 0, 10)
+            Tween(leftContainer, SmoothTween, {Position = UDim2.new(0, 15, 0, 10)})
+            Tween(rightContainer, SmoothTween, {Position = UDim2.new(0.5, 7, 0, 10)})
         end)
 
         local tab = {}
@@ -428,7 +432,6 @@ function library:Window(Info)
 
             local function updateSize()
                 Tween(section, SmoothTween, {Size = UDim2.new(1, 0, 0, 34 + cLayout.AbsoluteContentSize.Y + 10)})
-                Side.CanvasSize = UDim2.new(0, 0, 0, Side.UIListLayout.AbsoluteContentSize.Y + 20)
             end
             cLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateSize)
 
