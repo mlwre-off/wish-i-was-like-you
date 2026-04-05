@@ -396,7 +396,6 @@ local function AddTooltip(element, text)
     end)
 end
 
--- Drop shadow (sibling of main, behind it)
 local shadow = Instance.new("Frame")
 shadow.Name = "Shadow"
 shadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
@@ -678,7 +677,7 @@ uiGradient.Color = ColorSequence.new{
 uiGradient.Parent = editButton
 
 task.spawn(function()
-    while wait() do -- skidded from devforum
+    while wait() do
     if uiGradient.Enabled then
 	local loop = tick() % 2 / 2
 	colors = {}
@@ -841,7 +840,6 @@ uIStroke.Color = library.Theme.SoftStroke
 uIStroke.Transparency = 0.45
 uIStroke.Parent = tabFrame
 
--- Left accent indicator bar (animates in/out when tab selected)
 local tabAccentBar = Instance.new("Frame")
 tabAccentBar.Name = "TabAccentBar"
 tabAccentBar.BackgroundColor3 = library.Theme.Accent
@@ -1039,9 +1037,7 @@ sectionIcon.Parent = section
 
 sectionButton.MouseButton1Click:Connect(function()
     Closed.Value = not Closed.Value
-    --#d96163
-    
-    
+
     TweenService:Create(section, TweenInfo.new(.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = Closed.Value and UDim2.new(0, 162, 0, SizeY + 4) or UDim2.new(0, 162, 0, 27)}):Play()
     TweenService:Create(sectionFrame, TweenInfo.new(.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = Closed.Value and UDim2.new(0, 162, 0, SizeY) or UDim2.new(0, 162, 0, 23)}):Play()
     TweenService:Create(sectionIcon, TweenInfo.new(.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageColor3 = Closed.Value and Color3.fromRGB(217, 97, 99) or Color3.fromRGB(217, 217, 217)}):Play()
@@ -1623,7 +1619,7 @@ local MaxSize = 1
 local SizeFromScale = (MinSize +  (MaxSize - MinSize)) * DefaultScale
 SizeFromScale = SizeFromScale - (SizeFromScale % 2)
 
-sliderButton.MouseButton1Down:Connect(function() -- Skidded from material ui hehe, sorry
+sliderButton.MouseButton1Down:Connect(function()
 	local MouseMove, MouseKill
 	MouseMove = Mouse.Move:Connect(function()
 		local Px = library:GetXY(outerSlider)
@@ -2312,7 +2308,6 @@ table.insert(self.Windows, {
     Main = main
 })
 
--- Animated window open: expand height from 0 with a bouncy back easing
 task.delay(0, function()
     if not Destroyed then
         Tween(main, TweenInfo.new(0.45, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = Info.Size})
@@ -2323,7 +2318,6 @@ end)
 return window
 end
 
--- ─── Notification System ──────────────────────────────────────────────────────
 local _notifGui = nil
 local _notifCount = 0
 
@@ -2377,7 +2371,6 @@ function library:Notify(Info)
     toastStroke.Color = Color3.fromRGB(60, 60, 60)
     toastStroke.Parent = toast
 
-    -- Left accent bar
     local accentBar = Instance.new("Frame")
     accentBar.BackgroundColor3 = Info.Color
     accentBar.BorderSizePixel = 0
@@ -2387,7 +2380,6 @@ function library:Notify(Info)
     abCorner.CornerRadius = UDim.new(0, 7)
     abCorner.Parent = accentBar
 
-    -- Title
     local titleLbl = Instance.new("TextLabel")
     titleLbl.Font = Enum.Font.GothamBold
     titleLbl.Text = Info.Title
@@ -2399,7 +2391,6 @@ function library:Notify(Info)
     titleLbl.Size = UDim2.new(1, -18, 0, 16)
     titleLbl.Parent = toast
 
-    -- Body
     local bodyLbl = Instance.new("TextLabel")
     bodyLbl.Font = Enum.Font.Gotham
     bodyLbl.Text = Info.Text
@@ -2412,7 +2403,6 @@ function library:Notify(Info)
     bodyLbl.Size = UDim2.new(1, -18, 0, 24)
     bodyLbl.Parent = toast
 
-    -- Progress bar
     local progBg = Instance.new("Frame")
     progBg.BackgroundColor3 = Color3.fromRGB(48, 48, 48)
     progBg.BorderSizePixel = 0
@@ -2427,11 +2417,8 @@ function library:Notify(Info)
     progBar.Size = UDim2.new(1, 0, 1, 0)
     progBar.Parent = progBg
 
-    -- Slide in from right with bounce
     Tween(toast, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(0, 0, 0, 0)})
-    -- Progress drain
     Tween(progBar, TweenInfo.new(Info.Duration, Enum.EasingStyle.Linear), {Size = UDim2.new(0, 0, 1, 0)})
-    -- Auto dismiss
     task.delay(Info.Duration, function()
         Tween(toast, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(1.6, 0, 0, 0)})
         task.delay(0.35, function() pcall(function() toast:Destroy() end) end)
