@@ -54,18 +54,16 @@ function library:Window(Info)
     uiScale.Scale = 1
 
     Instance.new("UICorner", main).CornerRadius = UDim.new(0, 16)
+    main.ClipsDescendants = true
     local mainStroke = Instance.new("UIStroke", main)
     mainStroke.Color = library.Theme.Stroke
-    mainStroke.Thickness = 2 
+    mainStroke.Thickness = 2
 
-    ----------------------------------------------------------------------
-    -- TOPBAR 
-    ----------------------------------------------------------------------
     local topbar = Instance.new("Frame", main)
     topbar.BackgroundColor3 = library.Theme.Topbar
     topbar.Size = UDim2.new(1, 0, 0, 42)
     topbar.BorderSizePixel = 0
-    topbar.ZIndex = 50 -- ЖЁСТКАЯ ИЗОЛЯЦИЯ ПОВЕРХ ВСЕГО
+    topbar.ZIndex = 50
     Instance.new("UICorner", topbar).CornerRadius = UDim.new(0, 16) 
     
     local topbarFiller = Instance.new("Frame", topbar)
@@ -147,9 +145,6 @@ function library:Window(Info)
     statsLabel.AutomaticSize = Enum.AutomaticSize.X
     statsLabel.LayoutOrder = 0
 
-    ----------------------------------------------------------------------
-    -- SIDE MENU (ЛЕВОЕ МЕНЮ ВКЛАДОК)
-    ----------------------------------------------------------------------
     local tabContainer = Instance.new("Frame", main)
     tabContainer.BackgroundColor3 = library.Theme.Side
     tabContainer.Position = UDim2.new(0, 0, 0, 42)
@@ -178,23 +173,22 @@ function library:Window(Info)
     scrollingTabs.ZIndex = 41
     local tabLayout = Instance.new("UIListLayout", scrollingTabs)
     tabLayout.Padding = UDim.new(0, 6)
-    Instance.new("UIPadding", scrollingTabs).PaddingTop = UDim.new(0, 12)
-    Instance.new("UIPadding", scrollingTabs).PaddingLeft = UDim.new(0, 12)
-    Instance.new("UIPadding", scrollingTabs).PaddingRight = UDim.new(0, 12)
+    tabLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    local tabsPadding = Instance.new("UIPadding", scrollingTabs)
+    tabsPadding.PaddingTop = UDim.new(0, 12)
+    tabsPadding.PaddingBottom = UDim.new(0, 12)
+    tabsPadding.PaddingLeft = UDim.new(0, 10)
+    tabsPadding.PaddingRight = UDim.new(0, 10)
 
-    ----------------------------------------------------------------------
-    -- CONTENT AREA (ЗОНА КОНТЕНТА - ИСКЛЮЧАЕТ НАЛОЖЕНИЯ)
-    ----------------------------------------------------------------------
     local contentArea = Instance.new("Frame", main)
     contentArea.BackgroundTransparency = 1
-    contentArea.Position = UDim2.new(0, 140, 0, 42) -- Строго справа от меню и под топбаром
+    contentArea.Position = UDim2.new(0, 140, 0, 42)
     contentArea.Size = UDim2.new(1, -140, 1, -42)
-    contentArea.ClipsDescendants = true -- Запрещает вылазить наверх
+    contentArea.ClipsDescendants = true
     contentArea.ZIndex = 10
 
-    ----------------------------------------------------------------------
-    -- ФИЗИКА, DRAG & СТАТИСТИКА
-    ----------------------------------------------------------------------
+    local scrollContainers = {}
+    local scrollUpdaters = {}
     local dragging = false
     local dragInput, dragStart, startPos
     local targetPos = main.Position
@@ -204,7 +198,17 @@ function library:Window(Info)
             dragging = true
             dragStart = input.Position
             startPos = main.Position
-            input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
+            for _, sc in pairs(scrollContainers) do
+                sc.ScrollingEnabled = false
+            end
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                    for _, upd in pairs(scrollUpdaters) do
+                        upd()
+                    end
+                end
+            end)
         end
     end)
 
@@ -249,9 +253,6 @@ function library:Window(Info)
         end
     end)
 
-    ----------------------------------------------------------------------
-    -- ОТКРЫТИЕ / ЗАКРЫТИЕ 
-    ----------------------------------------------------------------------
     local isOpened = true
     local function ToggleUI()
         isOpened = not isOpened
@@ -323,9 +324,6 @@ function library:Window(Info)
         mobileBtn.Position = UDim2.new(cPos.X.Scale, cPos.X.Offset + (mTargetPos.X.Offset - cPos.X.Offset) * lSpeed, cPos.Y.Scale, cPos.Y.Offset + (mTargetPos.Y.Offset - cPos.Y.Offset) * lSpeed)
     end)
 
-    ----------------------------------------------------------------------
-    -- ВКЛАДКИ И СЕКЦИИ
-    ----------------------------------------------------------------------
     local window = {}
     local CurrentTab = nil
 
@@ -349,15 +347,16 @@ function library:Window(Info)
         tabText.TextSize = 13
         tabText.BackgroundTransparency = 1
         tabText.Size = UDim2.new(1, 0, 1, 0)
+        tabText.TextXAlignment = Enum.TextXAlignment.Center
+        tabText.TextYAlignment = Enum.TextYAlignment.Center
 
-        -- КОНТЕЙНЕРЫ ТЕПЕРЬ ОТНОСИТЕЛЬНО contentArea (Никогда не залезут наверх)
         local leftContainer = Instance.new("ScrollingFrame", contentArea)
         leftContainer.BackgroundTransparency = 1
         leftContainer.ScrollBarThickness = 0
         leftContainer.Position = UDim2.new(0, 15, 0, 10)
         leftContainer.Size = UDim2.new(0.5, -22, 1, -20)
         leftContainer.Visible = false
-        leftContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y -- Авто-скролл (Фикс багов)
+        leftContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
         local leftLayout = Instance.new("UIListLayout", leftContainer)
         leftLayout.Padding = UDim.new(0, 10)
 
@@ -367,9 +366,25 @@ function library:Window(Info)
         rightContainer.Position = UDim2.new(0.5, 7, 0, 10)
         rightContainer.Size = UDim2.new(0.5, -22, 1, -20)
         rightContainer.Visible = false
-        rightContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y -- Авто-скролл (Фикс багов)
+        rightContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
         local rightLayout = Instance.new("UIListLayout", rightContainer)
         rightLayout.Padding = UDim.new(0, 10)
+
+        table.insert(scrollContainers, leftContainer)
+        table.insert(scrollContainers, rightContainer)
+
+        local function updateLeftScroll()
+            leftContainer.ScrollingEnabled = (leftLayout.AbsoluteContentSize.Y > leftContainer.AbsoluteSize.Y)
+        end
+        local function updateRightScroll()
+            rightContainer.ScrollingEnabled = (rightLayout.AbsoluteContentSize.Y > rightContainer.AbsoluteSize.Y)
+        end
+        table.insert(scrollUpdaters, updateLeftScroll)
+        table.insert(scrollUpdaters, updateRightScroll)
+        leftLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateLeftScroll)
+        rightLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateRightScroll)
+        leftContainer:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateLeftScroll)
+        rightContainer:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateRightScroll)
 
         tabBtn.MouseEnter:Connect(function() if CurrentTab ~= tabBtn then Tween(tabText, FastTween, {TextColor3 = Color3.fromRGB(255,255,255)}) end end)
         tabBtn.MouseLeave:Connect(function() if CurrentTab ~= tabBtn then Tween(tabText, FastTween, {TextColor3 = library.Theme.Muted}) end end)
@@ -405,7 +420,6 @@ function library:Window(Info)
             local section = Instance.new("Frame", Side)
             section.BackgroundColor3 = library.Theme.Section
             section.Size = UDim2.new(1, 0, 0, 30)
-            section.ClipsDescendants = true
             Instance.new("UICorner", section).CornerRadius = UDim.new(0, 12) 
             
             local secStroke = Instance.new("UIStroke", section)
@@ -430,8 +444,15 @@ function library:Window(Info)
             cLayout.Padding = UDim.new(0, 6)
             Instance.new("UIPadding", content).PaddingBottom = UDim.new(0, 10)
 
+            local isFirstSizeUpdate = true
             local function updateSize()
-                Tween(section, SmoothTween, {Size = UDim2.new(1, 0, 0, 34 + cLayout.AbsoluteContentSize.Y + 10)})
+                local newSize = UDim2.new(1, 0, 0, 34 + cLayout.AbsoluteContentSize.Y + 10)
+                if isFirstSizeUpdate then
+                    isFirstSizeUpdate = false
+                    section.Size = newSize
+                else
+                    Tween(section, SmoothTween, {Size = newSize})
+                end
             end
             cLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateSize)
 
